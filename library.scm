@@ -29,7 +29,7 @@
   (unit library)
   (uses build-version)
   (disable-interrupts)
-  (hide ##sys#dynamic-unwind
+  (hide ##sys#dynamic-unwind ##sys#find-symbol
 	##sys#grow-vector ##sys#default-parameter-vector 
 	current-print-length setter-tag read-marks
 	##sys#print-exit
@@ -335,15 +335,8 @@ EOF
 
 (define (##sys#force promise)
   (if (##sys#structure? promise 'promise)
-      (apply ##sys#values
-             (or (##sys#slot promise 2)
-                 (let ((results (##sys#call-with-values (##sys#slot promise 1) (lambda xs xs))))
-                   (or (##sys#slot promise 2)
-                       (begin
-                         (##sys#setslot promise 1 #f)
-                         (##sys#setslot promise 2 results)
-                         results)))))
-      promise))
+      ((##sys#slot promise 1))
+      promise) )
 
 (define force ##sys#force)
 
@@ -911,6 +904,7 @@ EOF
 (define (##sys#fits-in-int? n) (##core#inline "C_fits_in_int_p" n))
 (define (##sys#fits-in-unsigned-int? n) (##core#inline "C_fits_in_unsigned_int_p" n))
 (define (##sys#flonum-in-fixnum-range? n) (##core#inline "C_flonum_in_fixnum_range_p" n))
+(define (##sys#double->number n) (##core#inline "C_double_to_number" n))
 (define (zero? n) (##core#inline "C_i_zerop" n))
 (define (positive? n) (##core#inline "C_i_positivep" n))
 (define (negative? n) (##core#inline "C_i_negativep" n))
@@ -3065,13 +3059,9 @@ EOF
 	     (unless (##sys#slot crt slot)
 	       (##sys#setslot crt slot (##sys#make-vector 256 #f)) )
 	     (##sys#check-char chr loc)
-	     (let ((i (char->integer chr)))
+	     (let ([i (char->integer chr)])
 	       (##sys#check-range i 0 256 loc)
-              (cond (proc
-                     (##sys#check-closure proc loc)
-                     (##sys#setslot (##sys#slot crt slot) i (wrap proc)))
-                    (else
-                     (##sys#setslot (##sys#slot crt slot) i #f))))))))
+	       (##sys#setslot (##sys#slot crt slot) i (wrap proc)) ) ) ) ) )
  
   (set! set-read-syntax!
     (syntax-setter
@@ -3650,6 +3640,8 @@ EOF
   (let ([sym (string->symbol ((##core#primitive "C_build_platform")))])
     (lambda () sym) ) )
 
+(define (c-runtime) 'unknown)		; DEPRECATED
+
 (define ##sys#windows-platform
   (and (eq? 'windows (software-type))
        ;; Still windows even if 'Linux-like'
@@ -3674,6 +3666,7 @@ EOF
 		   (if (##sys#fudge 24) " dload" "") 
 		   (if (##sys#fudge 28) " ptables" "")
 		   (if (##sys#fudge 32) " gchooks" "") 
+		   (if (##sys#fudge 20) " gclog" "") 
 		   (if (##sys#fudge 39) " cross" "") ) ) )
 	(string-append
 	 "Version " ##sys#build-version
@@ -4177,10 +4170,6 @@ EOF
 	((41) (apply ##sys#signal-hook #:type-error loc "bad argument type - not an output-port" args))
 	((42) (apply ##sys#signal-hook #:file-error loc "port already closed" args))
 	((43) (apply ##sys#signal-hook #:type-error loc "cannot represent string with NUL bytes as C string" args))
-	((44) (apply ##sys#signal-hook #:memory-error loc "segmentation violation" args))
-	((45) (apply ##sys#signal-hook #:arithmetic-error loc "floating-point exception" args))
-	((46) (apply ##sys#signal-hook #:runtime-error loc "illegal instruction" args))
-	((47) (apply ##sys#signal-hook #:memory-error loc "bus error" args))
 	(else (apply ##sys#signal-hook #:runtime-error loc "unknown internal error" args)) ) ) ) )
 
 
@@ -4387,9 +4376,7 @@ EOF
    '()					; #12 recipients
    #f) )				; #13 unblocked by timeout?
 
-(define ##sys#primordial-thread
-  (##sys#make-thread #f 'running 'primordial ##sys#default-thread-quantum))
-
+(define ##sys#primordial-thread (##sys#make-thread #f 'running 'primordial ##sys#default-thread-quantum))
 (define ##sys#current-thread ##sys#primordial-thread)
 
 (define (##sys#make-mutex id owner)
@@ -4410,9 +4397,6 @@ EOF
      (let ((ct ##sys#current-thread))
        (##sys#setslot ct 1 (lambda () (return (##core#undefined))))
        (##sys#schedule) ) ) ) )
-
-(define (##sys#kill-other-threads thunk)
-  (thunk))	     ; does nothing, will be modified by scheduler.scm
 
 
 ;;; Interrupt-handling:
@@ -4709,7 +4693,22 @@ EOF
 ;;; Promises:
 
 (define (##sys#make-promise proc)
-  (##sys#make-structure 'promise proc #f))
+  (let ([result-ready #f]
+	[results #f] )
+    (##sys#make-structure
+     'promise
+     (lambda ()
+       (if result-ready
+	   (apply ##sys#values results)
+	   (##sys#call-with-values 
+	    proc
+	    (lambda xs
+	      (if result-ready
+		  (apply ##sys#values results)
+		  (begin
+		    (set! result-ready #t)
+		    (set! results xs)
+		    (apply ##sys#values results) ) ) ) ) ) ) ) ) )
 
 (define (promise? x)
   (##sys#structure? x 'promise) )

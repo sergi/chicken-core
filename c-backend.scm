@@ -139,7 +139,7 @@
 	     (gen #\)) )
 
 	    ((##core#update)
-	     (gen "C_mutate2(((C_word *)")
+	     (gen "C_mutate(((C_word *)")
 	     (expr (car subs) i)
 	     (gen ")+" (+ (first params) 1) ",")
 	     (expr (cadr subs) i) 
@@ -153,7 +153,7 @@
 	     (gen #\)) )
 
 	    ((##core#updatebox)
-	     (gen "C_mutate2(((C_word *)")
+	     (gen "C_mutate(((C_word *)")
 	     (expr (car subs) i)
 	     (gen ")+1,")
 	     (expr (cadr subs) i) 
@@ -199,8 +199,8 @@
 		   (block (second params)) 
 		   (var (third params)))
 	       (if block
-		   (gen "C_mutate2(&lf[" index "]")
-		   (gen "C_mutate2((C_word*)lf[" index "]+1") )
+		   (gen "C_mutate(&lf[" index "]")
+		   (gen "C_mutate((C_word*)lf[" index "]+1") )
 	       (gen " /* (set! " (uncommentify (##sys#symbol->qualified-string var)) " ...) */,")
 	       (expr (car subs) i)
 	       (gen #\)) ) )
@@ -1246,7 +1246,7 @@
 (define (foreign-argument-conversion type)
   (let ([err (lambda () (quit "illegal foreign argument type `~A'" type))])
     (case type
-      ((scheme-object) "(")
+      ((scheme-object) "C_gclog_outgoing(")
       ((char unsigned-char) "C_character_code((C_word)")
       ((byte int int32 unsigned-int unsigned-int32 unsigned-byte) "C_unfix(")
       ((short) "C_unfix(")
@@ -1335,7 +1335,8 @@
       ((long) (sprintf "C_long_to_num(&~a," dest))
       ((unsigned-long) (sprintf "C_unsigned_long_to_num(&~a," dest))
       ((bool) "C_mk_bool(")
-      ((void scheme-object) "((C_word)")
+      ((void) "((C_word)")
+      ((scheme-object) "C_gclog_incoming((C_word)")
       (else
        (cond [(and (symbol? type) (##sys#hash-table-ref foreign-type-table type))
 	      => (lambda (x)
