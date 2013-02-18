@@ -1515,25 +1515,11 @@ extern double trunc(double);
 #define C_a_i_current_milliseconds(ptr, c, dummy) C_flonum(ptr, C_milliseconds())
 
 #ifdef C_GCLOG
-C_fctexport C_word C_fcall C_gclog_outgoing(C_word val) C_regparm;
-C_fctexport C_word C_fcall C_gclog_incoming(C_word val) C_regparm;
-C_fctexport void C_fcall C_gclog_setsize(C_byte *fstart, C_byte *flimit, C_byte *tstart, C_byte *tlimit) C_regparm;
-C_fctexport void C_fcall C_gclog_startgc() C_regparm;
-C_fctexport void C_fcall C_gclog_endgc() C_regparm;
-C_fctexport void C_fcall C_gclog_copy(C_SCHEME_BLOCK *from, C_SCHEME_BLOCK *to, C_uword bytes) C_regparm;
-C_fctexport void C_fcall C_gclog_startresize() C_regparm;
-C_fctexport void C_fcall C_gclog_resize(C_byte *fstart, C_byte *flimit, C_byte *tstart, C_byte *tlimit) C_regparm;
-C_fctexport void C_fcall C_gclog_endresize() C_regparm;
+C_fctexport C_word C_fcall C_gclog_outgoing(C_char *file, int line, C_word val) C_regparm;
+C_fctexport C_word C_fcall C_gclog_incoming(C_char *file, int line, C_word val) C_regparm;
 #else
-# define C_gclog_outgoing(word)           (word)
-# define C_gclog_incoming(word)           (word)
-# define C_gclog_setsize(a, b, c, d)
-# define C_gclog_resize(a, b, c, d)
-# define C_gclog_copy(a,b, c)
-C_inline void C_gclog_startgc() {}
-C_inline void C_gclog_endgc() {}
-C_inline void C_gclog_startresize() {}
-C_inline void C_gclog_endresize() {}
+# define C_gclog_outgoing(a, b, word)           (word)
+# define C_gclog_incoming(a, b, word)           (word)
 #endif
 
 

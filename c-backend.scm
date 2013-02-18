@@ -1246,7 +1246,7 @@
 (define (foreign-argument-conversion type)
   (let ([err (lambda () (quit "illegal foreign argument type `~A'" type))])
     (case type
-      ((scheme-object) "C_gclog_outgoing(")
+      ((scheme-object) "C_gclog_outgoing(__FILE__, __LINE__, ")
       ((char unsigned-char) "C_character_code((C_word)")
       ((byte int int32 unsigned-int unsigned-int32 unsigned-byte) "C_unfix(")
       ((short) "C_unfix(")
@@ -1336,7 +1336,7 @@
       ((unsigned-long) (sprintf "C_unsigned_long_to_num(&~a," dest))
       ((bool) "C_mk_bool(")
       ((void) "((C_word)")
-      ((scheme-object) "C_gclog_incoming((C_word)")
+      ((scheme-object) "C_gclog_incoming(__FILE__, __LINE__, (C_word)")
       (else
        (cond [(and (symbol? type) (##sys#hash-table-ref foreign-type-table type))
 	      => (lambda (x)

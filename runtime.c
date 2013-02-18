@@ -454,6 +454,7 @@ static C_TLS int
   pending_interrupts_count;
 #ifdef C_GCLOG
 static int enable_gclog = 0;
+static int gclog_timestamp = 0;
 static FILE *gclog;
 #endif
 
@@ -506,6 +507,28 @@ static C_PTABLE_ENTRY *create_initial_ptable();
 
 #if !defined(NO_DLOAD2) && (defined(HAVE_DLFCN_H) || defined(HAVE_DL_H) || (defined(HAVE_LOADLIBRARY) && defined(HAVE_GETPROCADDRESS)))
 static void dload_2(void *dummy) C_noret;
+#endif
+
+#ifdef C_GCLOG
+static void C_fcall gclog_setsize(C_byte *fstart, C_byte *flimit, C_byte *tstart, C_byte *tlimit) C_regparm;
+static void C_fcall gclog_startgc() C_regparm;
+static void C_fcall gclog_endgc() C_regparm;
+static void C_fcall gclog_copy(C_SCHEME_BLOCK *from, C_SCHEME_BLOCK *to, C_uword bytes) C_regparm;
+static void C_fcall gclog_startresize() C_regparm;
+static void C_fcall gclog_resize(C_byte *fstart, C_byte *flimit, C_byte *tstart, C_byte *tlimit) C_regparm;
+static void C_fcall gclog_endresize() C_regparm;
+static void C_fcall gclog_unknown(C_SCHEME_BLOCK *ptr) C_regparm;
+static void gclog_oversized(C_SCHEME_BLOCK *ptr, C_header hdr);
+#else
+# define gclog_setsize(a, b, c, d)
+# define gclog_resize(a, b, c, d)
+# define gclog_copy(a, b, c)
+# define gclog_unknown(a)
+# define gclog_oversized(a, b)
+static void gclog_startgc() {}
+static void gclog_endgc() {}
+static void gclog_startresize() {}
+static void gclog_endresize() {}
 #endif
 
 
@@ -1085,8 +1108,7 @@ void C_set_or_change_heap_size(C_word heap, int reintern)
   tospace_limit = tospace_start + size;
   mutation_stack_top = mutation_stack_bottom;
 
-  C_gclog_setsize(fromspace_start, C_fromspace_limit,
-		  tospace_start, tospace_limit);
+  gclog_setsize(fromspace_start, C_fromspace_limit, tospace_start, tospace_limit);
 
   if(reintern) initialize_symbol_table();
 }
@@ -2666,7 +2688,7 @@ C_regparm void C_fcall C_reclaim(void *trampoline, void *proc)
   if(interrupt_reason && C_interrupts_enabled)
     handle_interrupt(trampoline, proc);
 
-  C_gclog_startgc();
+  gclog_startgc();
 
   /* Note: the mode argument will always be GC_MINOR or GC_REALLOC. */
   if(C_pre_gc_hook != NULL) C_pre_gc_hook(GC_MINOR);
@@ -2968,7 +2990,7 @@ C_regparm void C_fcall C_reclaim(void *trampoline, void *proc)
 
   if(C_post_gc_hook != NULL) C_post_gc_hook(gc_mode, (long)tgc);
 
-  C_gclog_endgc();
+  gclog_endgc();
 
   /* Jump from the Empire State Building... */
   C_longjmp(C_restart, 1);
@@ -3011,7 +3033,7 @@ C_regparm void C_fcall really_mark(C_word *x)
       if(C_gc_trace_hook != NULL) 
 	C_gc_trace_hook(x, gc_mode);
 #endif
-
+      gclog_unknown(p);
       return;
     }
 
@@ -3023,7 +3045,8 @@ C_regparm void C_fcall really_mark(C_word *x)
       return;
     }
 
-    if((C_uword)val >= (C_uword)fromspace_start && (C_uword)val < (C_uword)C_fromspace_top) return;
+    if((C_uword)val >= (C_uword)fromspace_start && (C_uword)val < (C_uword)C_fromspace_top) 
+	return;
 
     p2 = (C_SCHEME_BLOCK *)C_align((C_uword)C_fromspace_top);
 
@@ -3043,7 +3066,7 @@ C_regparm void C_fcall really_mark(C_word *x)
     C_fromspace_top = (C_byte *)p2 + C_align(bytes) + sizeof(C_word);
 
   scavenge:
-    C_gclog_copy(p, p2, bytes);
+    gclog_copy(p, p2, bytes);
     *x = (C_word)p2;
     p2->header = h;
     p->header = ptr_to_fptr((C_uword)p2);
@@ -3150,7 +3173,7 @@ C_regparm void C_fcall C_rereclaim2(C_uword size, int double_plus)
   C_byte *new_heapspace;
   size_t  new_heapspace_size;
 
-  C_gclog_startresize();
+  gclog_startresize();
 
   if(C_pre_gc_hook != NULL) C_pre_gc_hook(GC_REALLOC);
 
@@ -3188,7 +3211,7 @@ C_regparm void C_fcall C_rereclaim2(C_uword size, int double_plus)
   new_tospace_top = new_tospace_start;
   new_tospace_limit = new_tospace_start + size;
   heap_scan_top = new_tospace_top;
-  C_gclog_resize(fromspace_start, C_fromspace_limit, new_tospace_start, new_tospace_limit);
+  gclog_resize(fromspace_start, C_fromspace_limit, new_tospace_start, new_tospace_limit);
 
   /* Mark items in forwarding table: */
   for(p = forwarding_table; *p != 0; p += 2) {
@@ -3299,7 +3322,7 @@ C_regparm void C_fcall C_rereclaim2(C_uword size, int double_plus)
 
   if(C_post_gc_hook != NULL) C_post_gc_hook(GC_REALLOC, 0);
 
-  C_gclog_endresize();
+  gclog_endresize();
 }
 
 
@@ -3391,8 +3414,10 @@ C_regparm void C_fcall really_remark(C_word *x)
   bytes = (h & C_BYTEBLOCK_BIT) ? n : n * sizeof(C_word);
 
   new_tospace_top = ((C_byte *)p2 + C_align(bytes) + sizeof(C_word));
+
   if(new_tospace_top > new_tospace_limit) {
-    panic(C_text("out of memory - heap full while resizing"));
+      gclog_oversized(p, h);
+      panic(C_text("out of memory - heap full while resizing"));
   }
 
   *x = (C_word)p2;
@@ -9344,11 +9369,12 @@ C_i_pending_interrupt(C_word dummy)
 
 #ifdef C_GCLOG
 C_regparm C_word C_fcall
-C_gclog_incoming(C_word val)
+C_gclog_incoming(C_char *file, int line, C_word val)
 {
   if(enable_gclog) {
-    fprintf(gclog, "I " UWORD_FORMAT_STRING "\n", (C_uword)val);
-    fflush(gclog);
+      fprintf(gclog, "I " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING " %s:%d\n", 
+	      (C_uword)(gclog_timestamp++), (C_uword)val, file, line);
+      fflush(gclog);
   }
 
   return val;
@@ -9356,11 +9382,12 @@ C_gclog_incoming(C_word val)
 
 
 C_regparm C_word C_fcall
-C_gclog_outgoing(C_word val)
+C_gclog_outgoing(C_char *file, int line, C_word val)
 {
   if(enable_gclog) {
-    C_fprintf(gclog, "O " UWORD_FORMAT_STRING "\n", (C_uword)val);
-    C_fflush(gclog);
+      C_fprintf(gclog, "O " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING " %s:%d\n", 
+		(C_uword)(gclog_timestamp++), (C_uword)val, file, line);
+      C_fflush(gclog);
   }
 
   return val;
@@ -9368,76 +9395,98 @@ C_gclog_outgoing(C_word val)
 
 
 C_regparm void 
-C_gclog_startgc()
+gclog_startgc()
 {
   if(enable_gclog) {
-    C_fprintf(gclog, "s\n");
+    C_fprintf(gclog, "s " UWORD_FORMAT_STRING "\n", (C_uword)(gclog_timestamp++));
     C_fflush(gclog);
   }
 }
 
 
 C_regparm void 
-C_gclog_endgc()
+gclog_endgc()
 {
   if(enable_gclog) {
-    C_fprintf(gclog, "e\n");
+    C_fprintf(gclog, "e " UWORD_FORMAT_STRING "\n", (C_uword)(gclog_timestamp++));
     C_fflush(gclog);
   }
 }
 
 
 C_regparm void 
-C_gclog_startresize()
+gclog_startresize()
 {
   if(enable_gclog) {
-    C_fprintf(gclog, "S\n");
+    C_fprintf(gclog, "S " UWORD_FORMAT_STRING "\n", (C_uword)(gclog_timestamp++));
     C_fflush(gclog);
   }
 }
 
 
 C_regparm void 
-C_gclog_endresize()
+gclog_endresize()
 {
   if(enable_gclog) {
-    C_fprintf(gclog, "E\n");
+    C_fprintf(gclog, "E " UWORD_FORMAT_STRING "\n", (C_uword)(gclog_timestamp++));
     C_fflush(gclog);
   }
 }
 
 
 C_regparm void 
-C_gclog_setsize(C_byte *fstart, C_byte *fend, C_byte *tstart, C_byte *tend)
+gclog_setsize(C_byte *fstart, C_byte *fend, C_byte *tstart, C_byte *tend)
 {
   if(enable_gclog) {
     C_fprintf(gclog, "Z " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING 
-	      " " UWORD_FORMAT_STRING "\n",
-	      (C_uword)fstart, (C_uword)fend, (C_uword)tstart, (C_uword)tend);
+	      " " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING "\n",
+	      (C_uword)(gclog_timestamp++), (C_uword)fstart, (C_uword)fend, (C_uword)tstart, 
+	      (C_uword)tend);
     C_fflush(gclog);
   }
 }
 
 
 C_regparm void
-C_gclog_resize(C_byte *fstart, C_byte *fend, C_byte *tstart, C_byte *tend)
+gclog_resize(C_byte *fstart, C_byte *fend, C_byte *tstart, C_byte *tend)
 {
   if(enable_gclog) {
-    C_fprintf(gclog, "R " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING 
-	      " " UWORD_FORMAT_STRING "\n",
-	      (C_uword)fstart, (C_uword)fend, (C_uword)tstart, (C_uword)tend);
+    C_fprintf(gclog, "R " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING
+	      " " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING "\n",
+	      (C_uword)(gclog_timestamp++), (C_uword)fstart, (C_uword)fend, (C_uword)tstart,
+	      (C_uword)tend);
     C_fflush(gclog);
   }
 }
 
 
 C_regparm void 
-C_gclog_copy(C_SCHEME_BLOCK *from, C_SCHEME_BLOCK *to, C_uword bytes)
+gclog_copy(C_SCHEME_BLOCK *from, C_SCHEME_BLOCK *to, C_uword bytes)
 {
   if(enable_gclog) {
-    C_fprintf(gclog, "C " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING "\n",
-	      (C_uword)from, (C_uword)to, bytes);
+    C_fprintf(gclog, "C " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING
+	      " " UWORD_FORMAT_STRING "\n",
+	      (C_uword)(gclog_timestamp++), (C_uword)from, (C_uword)to, bytes);
     C_fflush(gclog);
   }
+}
+
+
+C_regparm void
+gclog_unknown(C_SCHEME_BLOCK *ptr)
+{
+    if(enable_gclog)
+	C_fprintf(gclog, "? " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING "\n", 
+		  (C_uword)(gclog_timestamp++), (C_uword)ptr);
+}
+
+
+void
+gclog_oversized(C_SCHEME_BLOCK *ptr, C_header hdr)
+{
+    if(enable_gclog)
+	C_fprintf(gclog, "! " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING " " UWORD_FORMAT_STRING
+		  "\n",
+		  (C_uword)(gclog_timestamp++), (C_uword)ptr, (C_uword)hdr);
 }
 #endif
