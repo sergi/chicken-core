@@ -187,7 +187,7 @@ extern void _C_do_apply_hack(void *proc, C_word *args, int count) C_noret;
 #ifdef C_SIXTY_FOUR
 # define ALIGNMENT_HOLE_MARKER         ((C_word)0xfffffffffffffffeL)
 # define FORWARDING_BIT_SHIFT          63
-# define UWORD_FORMAT_STRING           "%016x"
+# define UWORD_FORMAT_STRING           "%016lx"
 # define UWORD_COUNT_FORMAT_STRING     "%u"
 #else
 # define ALIGNMENT_HOLE_MARKER         ((C_word)0xfffffffe)
@@ -614,6 +614,9 @@ int CHICKEN_initialize(int heap, int stack, int symbols, void *toplevel)
   int i;
 #ifdef C_GCLOG
   C_char gclogfile[ 256 ];
+
+  C_sprintf(gclogfile, "GCLOG.%d", C_getpid());
+  gclog = C_fopen(gclogfile, "wb");
 #endif
 
   /*FIXME Should have C_tzset in chicken.h? */
@@ -749,12 +752,6 @@ int CHICKEN_initialize(int heap, int stack, int symbols, void *toplevel)
   callback_continuation_level = 0;
   gc_ms = 0;
   C_randomize(time(NULL));
-
-#ifdef C_GCLOG
-  C_sprintf(gclogfile, "GCLOG.%d", C_getpid());
-  gclog = C_fopen(gclogfile, "wb");
-#endif
-
   return 1;
 }
 
@@ -2965,14 +2962,14 @@ C_regparm void C_fcall C_reclaim(void *trampoline, void *proc)
 #endif
 
     if(gc_mode == GC_MINOR) 
-      C_fprintf(C_stderr, C_text("\t0x" UWORD_FORMAT_STRING), (unsigned int)count);
+      C_fprintf(C_stderr, C_text("\t0x" UWORD_FORMAT_STRING), (C_uword)count);
 
     C_fputc('\n', C_stderr);
     C_dbg("GC", C_text(" from\t0x" UWORD_FORMAT_STRING "\t0x" UWORD_FORMAT_STRING "\t0x" UWORD_FORMAT_STRING),
 	  (C_uword)fromspace_start, (C_uword)C_fromspace_top, (C_uword)C_fromspace_limit);
 
     if(gc_mode == GC_MAJOR) 
-      C_fprintf(C_stderr, C_text("\t0x" UWORD_FORMAT_STRING), (unsigned)count);
+      C_fprintf(C_stderr, C_text("\t0x" UWORD_FORMAT_STRING), (C_uword)count);
 
     C_fputc('\n', C_stderr);
     C_dbg("GC", C_text("   to\t0x" UWORD_FORMAT_STRING "\t0x" UWORD_FORMAT_STRING "\t0x"
@@ -4196,9 +4193,9 @@ C_regparm C_word C_fcall C_fudge(C_word fudge_factor)
 
   case C_fix(20):		/* GC-logging enabled? */
 #ifdef C_GCLOG
-      return C_SCHEME_TRUE;
+    return C_fix(gclog_timestamp);
 #else
-      return C_SCHEME_FALSE;
+    return C_SCHEME_FALSE;
 #endif
 
   case C_fix(21):		/* largest fixnum */
@@ -9242,7 +9239,7 @@ dump_heap_state_2(void *dummy)
 	  x = C_block_item(x, 1);
 	  C_fprintf(C_stderr, C_text("`%.*s'"), (int)C_header_size(x), C_c_string(x));
 	}
-	else C_fprintf(C_stderr, C_text("unknown key 0x" UWORD_FORMAT_STRING), (unsigned int)b->key);
+	else C_fprintf(C_stderr, C_text("unknown key 0x" UWORD_FORMAT_STRING), (C_uword)b->key);
       }
 
       C_fprintf(C_stderr, C_text("\t" UWORD_COUNT_FORMAT_STRING), b->count);
