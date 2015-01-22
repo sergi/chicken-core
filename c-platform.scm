@@ -140,7 +140,7 @@
     current-input-port current-output-port) )
 
 (set! default-extended-bindings
-  '(bitwise-and alist-cons xcons
+  '(bignum? cplxnum? ratnum? bitwise-and alist-cons xcons
     bitwise-ior bitwise-xor bitwise-not add1 sub1 fx+ fx- fx* fx/
     fx+? fx-? fx*? fx/? fxmod o fp/?
     fx= fx> fx< fx>= fx<= fixnum? fxneg fxmax fxmin identity fp+ fp- fp* fp/ fpmin fpmax fpneg
@@ -585,6 +585,7 @@
 (rewrite 'integer? 2 1 "C_i_integerp" #t)
 (rewrite 'flonum? 2 1 "C_i_flonump" #t)
 (rewrite 'fixnum? 2 1 "C_fixnump" #t)
+(rewrite 'bignum? 2 1 "C_i_bignump" #t)
 (rewrite 'finite? 2 1 "C_i_finitep" #f)
 (rewrite 'fpinteger? 2 1 "C_u_i_fpintegerp" #f)
 (rewrite '##sys#pointer? 2 1 "C_anypointerp" #t)

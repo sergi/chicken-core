@@ -107,7 +107,7 @@
 (check #\x 1.2 char)
 (check #t #f true)
 (check #f #t false)
-(check (+ 1 2) 'a number)
+(check (+ 1 2) 'a integer)
 (check '(1) 1.2 (list fixnum))
 (check '(a) 1.2 (list symbol))
 (check (list 1) '(1 . 2) (list fixnum))
@@ -246,11 +246,12 @@
 (define x 1)
 
 (assert 
- (eq? 'number
-      (compiler-typecase (vector-ref '#(1 2 3.4) x)
-	(fixnum 'fixnum)
-	(float 'float)
-	(number 'number))))
+ (equal? 'float-or-fixnum
+	 (compiler-typecase (vector-ref '#(1 2 3.4) x)
+	   (fixnum 'fixnum)
+	   (float 'float)
+	   (number 'number)
+	   ((or float fixnum) 'float-or-fixnum))))
 
 (assert
  (eq? 'boolean

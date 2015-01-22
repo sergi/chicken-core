@@ -69,8 +69,8 @@
 ;       | (deprecated NAME)
 ;   BASIC = * | string | symbol | char | number | boolean | true | false | list | pair |
 ;           procedure | vector | null | eof | undefined | input-port | output-port |
-;           blob | noreturn | pointer | locative | fixnum | float |
-;           pointer-vector
+;           blob | noreturn | pointer | locative | fixnum | float | bignum |
+;           ratnum | compnum | integer | pointer-vector
 ;   COMPLEX = (pair VAL VAL)
 ;           | (vector-of VAL) 
 ;           | (list-of VAL)
@@ -135,7 +135,10 @@
       (cond ((string? lit) 'string)
 	    ((symbol? lit) 'symbol)
 	    ((fixnum? lit) 'fixnum)
-	    ((flonum? lit) 'float)
+	    ((flonum? lit) 'float)	; Why not "flonum", for consistency?
+	    ((bignum? lit) 'bignum)
+	    ((ratnum? lit) 'ratnum)
+	    ((cplxnum? lit) 'cplxnum)
 	    ((number? lit) 
 	     (case number-type 
 	       ((fixnum) 'fixnum)
@@ -1047,12 +1050,18 @@
 	  ((eq? t2 'boolean)
 	   (and (not exact)
 		(match1 t1 '(or true false))))
+	  ((eq? t1 'integer) 
+	   (and (not exact)
+		(match1 '(or fixnum bignum) t2)))
 	  ((eq? t1 'number) 
 	   (and (not exact)
-		(match1 '(or fixnum float) t2)))
+		(match1 '(or fixnum float bignum ratnum cplxnum) t2)))
+	  ((eq? t2 'integer)
+	   (and (not exact)
+		(match1 t1 '(or fixnum bignum))))
 	  ((eq? t2 'number)
 	   (and (not exact)
-		(match1 t1 '(or fixnum float))))
+		(match1 t1 '(or fixnum float bignum ratnum cplxnum))))
 	  ((eq? 'procedure t1)
 	   (and (pair? t2)
 		(eq? 'procedure (car t2))))
@@ -1260,7 +1269,8 @@
 				 #f
 				 ts)))
 			   ((lset= eq? '(true false) ts) 'boolean)
-			   ((lset= eq? '(fixnum float) ts) 'number)
+			   ((lset= eq? '(fixnum bignum) ts) 'integer)
+			   ((lset= eq? '(fixnum float bignum ratnum cplxnum) ts) 'number)
 			   (else
 			    (let* ((ts (append-map
 					(lambda (t)
@@ -1415,7 +1425,8 @@
 		    ((eq? 'vector t1) (test '(vector-of *) t2))
 		    ((eq? 'list t1) (test '(list-of *) t2))
 		    ((eq? 'boolean t1) (test '(or true false) t2))
-		    ((eq? 'number t1) (test '(or fixnum float) t2))
+		    ((eq? 'integer t1) (test '(or fixnum bignum) t2))
+		    ((eq? 'number t1) (test '(or fixnum float bignum ratnum cplxnum) t2))
 		    ((and (eq? 'null t1)
 			  (pair? t2) 
 			  (eq? (car t2) 'list-of)))
@@ -1444,7 +1455,8 @@
 		     (case t2
 		       ((procedure) (and (pair? t1) (eq? 'procedure (car t1))))
 		       ((boolean) (memq t1 '(true false)))
-		       ((number) (memq t1 '(fixnum float)))
+		       ((integer) (memq t1 '(fixnum bignum)))
+		       ((number) (memq t1 '(fixnum float bignum ratnum cplxnum)))
 		       ((vector) (test t1 '(vector-of *)))
 		       ((list) (test t1 '(list-of *)))
 		       ((pair) (test t1 '(pair * *)))
@@ -1722,8 +1734,10 @@
 			'*)
 		    (resolve t2 (cons t done))))))
 	   ((not (pair? t)) 
-	    (if (memq t '(* fixnum eof char string symbol float number list vector pair
-			    undefined blob input-port output-port pointer locative boolean 
+	    (if (memq t '(* eof char string symbol
+			    fixnum float bignum ratnum cplxnum
+			    number integer list vector pair undefined blob
+			    input-port output-port pointer locative boolean 
 			    true false pointer-vector null procedure noreturn))
 		t
 		(bomb "resolve: can't resolve unknown type-variable" t)))
@@ -1938,7 +1952,7 @@
     (define (validate t #!optional (rec #t))
       (cond ((memq t '(* string symbol char number boolean true false list pair
 			 procedure vector null eof undefined input-port output-port
-			 blob pointer locative fixnum float pointer-vector
+			 blob pointer locative fixnum float integer bignum ratnum cplxnum pointer-vector
 			 deprecated noreturn values))
 	     t)
 	    ((memq t '(u8vector s8vector u16vector s16vector u32vector s32vector
