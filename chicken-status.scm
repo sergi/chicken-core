@@ -51,10 +51,7 @@
   (define (gather-extensions patterns)
     (let* ((extensions (gather-all-extensions))
 	   (pats (concatenate (map (cut grep <> extensions) patterns))))
-      (let loop ((pats pats))
-	(cond ((null? pats) '())
-	      ((member (car pats) (cdr pats)) (loop (cdr pats)))
-	      (else (cons (car pats) (loop (cdr pats))))))))
+      (delete-duplicates pats)))
 
   (define (gather-eggs patterns)
     (define (egg-name extension)

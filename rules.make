@@ -512,7 +512,7 @@ batch-driver.c: batch-driver.scm mini-srfi-1.scm \
 		chicken.compiler.lfa2.import.scm \
 		chicken.compiler.c-backend.import.scm \
 		chicken.compiler.support.import.scm
-c-platform.c: c-platform.scm \
+c-platform.c: c-platform.scm mini-srfi-1.scm \
 		chicken.compiler.optimizer.import.scm \
 		chicken.compiler.support.import.scm \
 		chicken.compiler.core.import.scm
@@ -525,7 +525,7 @@ core.c: core.scm mini-srfi-1.scm \
 		chicken.compiler.support.import.scm
 optimizer.c: optimizer.scm mini-srfi-1.scm \
 		chicken.compiler.support.import.scm
-scrutinizer.c: scrutinizer.scm \
+scrutinizer.c: scrutinizer.scm mini-srfi-1.scm \
 		chicken.compiler.support.import.scm
 lfa2.c: lfa2.scm chicken.compiler.support.import.scm mini-srfi-1.scm
 compiler-syntax.c: compiler-syntax.scm mini-srfi-1.scm \

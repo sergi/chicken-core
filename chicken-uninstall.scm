@@ -58,10 +58,7 @@
     (let* ((eggs (map pathname-file 
 		      (glob (make-pathname (repo-path) "*" "setup-info"))))
 	   (pats (concatenate (map (cut grep <> eggs) patterns))))
-      (let loop ((pats pats))
-	(cond ((null? pats) '())
-	      ((member (car pats) (cdr pats)) (loop (cdr pats)))
-	      (else (cons (car pats) (loop (cdr pats))))))))
+      (delete-duplicates pats)))
 
   (define (fini code)
     (print "aborted.")
