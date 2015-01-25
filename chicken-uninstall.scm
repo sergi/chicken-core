@@ -26,14 +26,14 @@
 
 (require-library
  setup-api
- srfi-1 posix data-structures utils ports irregex files)
+ posix data-structures utils ports irregex files)
 
 
 (module main ()
   
   (import scheme chicken foreign)
   (import setup-api)
-  (import srfi-1 posix data-structures utils ports irregex files)
+  (import posix data-structures utils ports irregex files)
 
   (include "mini-srfi-1.scm")
 

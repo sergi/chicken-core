@@ -26,14 +26,14 @@
 
 (declare
   (unit scrutinizer)
-  (uses srfi-1 data-structures extras ports files
+  (uses data-structures extras ports files
 	support) )
 
 (module chicken.compiler.scrutinizer
     (scrutinize load-type-database emit-type-file
      validate-type check-and-validate-type install-specializations)
 
-(import chicken scheme srfi-1 data-structures extras ports files
+(import chicken scheme data-structures extras ports files
 	chicken.compiler.support)
 
 (include "tweaks")

@@ -36,7 +36,7 @@ VPATH=$(SRCDIR)
 SETUP_API_OBJECTS_1 = setup-api setup-download
 
 LIBCHICKEN_SCHEME_OBJECTS_1 = \
-       library eval data-structures ports files extras lolevel utils tcp srfi-1 srfi-4 \
+       library eval data-structures ports files extras lolevel utils tcp srfi-4 \
        $(POSIXFILE) irregex scheduler \
        profiler stub expand modules chicken-syntax chicken-ffi-syntax build-version
 LIBCHICKEN_OBJECTS_1 = $(LIBCHICKEN_SCHEME_OBJECTS_1) runtime
@@ -570,8 +570,6 @@ files.c: $(SRCDIR)files.scm $(SRCDIR)common-declarations.scm
 lolevel.c: $(SRCDIR)lolevel.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib) 
 tcp.c: $(SRCDIR)tcp.scm $(SRCDIR)common-declarations.scm
-	$(bootstrap-lib) 
-srfi-1.c: $(SRCDIR)srfi-1.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib) 
 srfi-4.c: $(SRCDIR)srfi-4.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib) 

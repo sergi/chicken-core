@@ -30,7 +30,7 @@
 ;; Same goes for "backend" and "driver".
 (declare
   (unit c-platform)
-  (uses srfi-1 data-structures
+  (uses data-structures
 	optimizer support compiler))
 
 (module chicken.compiler.c-platform
@@ -42,7 +42,7 @@
      target-include-file words-per-flonum
      parameter-limit small-parameter-limit)
 
-(import chicken scheme srfi-1 data-structures
+(import chicken scheme data-structures
 	chicken.compiler.optimizer
 	chicken.compiler.support
 	chicken.compiler.core)
