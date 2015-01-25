@@ -141,9 +141,9 @@
 
 (set! default-extended-bindings
   '(bignum? cplxnum? ratnum? bitwise-and alist-cons xcons integer-length
-    bitwise-ior bitwise-xor bitwise-not add1 sub1 fx+ fx- fx* fx/
-    fx+? fx-? fx*? fx/? fxmod o fp/?
-    fx= fx> fx< fx>= fx<= fixnum? fxneg fxmax fxmin fxlen identity fp+ fp- fp* fp/ fpmin fpmax fpneg
+    bitwise-ior bitwise-xor bitwise-not add1 sub1 fx+ fx- fx* fx/ fxgcd
+    fx+? fx-? fx*? fx/? fxmod fxrem o fp/?
+    fx= fx> fx< fx>= fx<= fixnum? fxneg fxmax fxmin fxlen identity fp+ fp- fp* fp/ fpmin fpmax fpneg fpgcd
     fp> fp< fp= fp>= fp<= fxand fxnot fxior fxxor fxshr fxshl bit-set? fxodd? fxeven?
     fpfloor fpceiling fptruncate fpround fpsin fpcos fptan fpasin fpacos fpatan
     fpatan2 fpexp fpexpt fplog fpsqrt fpabs fpinteger?
@@ -215,144 +215,6 @@
 ;;; Rewriting-definitions for this platform:
 
 (rewrite '+ 19 0 "C_fixnum_plus" "C_u_fixnum_plus" #f)
-
-(rewrite
- '* 8 
- (lambda (db classargs cont callargs)
-   ;; (*) -> 1
-   ;; (* <x>) -> <x>
-   ;; (* <x1> ...) -> (##core#inline "C_fixnum_times" <x1> (##core#inline "C_fixnum_times" ...)) [fixnum-mode]
-   ;; - Remove "1" from arguments.
-   ;; - Replace multiplications with 2 by shift left. [fixnum-mode]
-   (let ([callargs 
-	  (remove
-	   (lambda (x)
-	     (and (eq? 'quote (node-class x))
-		  (eq? 1 (first (node-parameters x))) ) ) 
-	   callargs) ] )
-     (cond [(null? callargs) (make-node '##core#call (list #t) (list cont (qnode 0)))]
-	   [(null? (cdr callargs))
-	    (make-node '##core#call (list #t) (list cont (first callargs))) ]
-	   [(eq? number-type 'fixnum)
-	    (make-node 
-	     '##core#call (list #t)
-	     (list
-	      cont
-	      (fold-inner
-	       (lambda (x y)
-		 (if (and (eq? 'quote (node-class y)) (eq? 2 (first (node-parameters y))))
-		     (make-node '##core#inline '("C_fixnum_shift_left") (list x (qnode 1)))
-		     (make-node '##core#inline '("C_fixnum_times") (list x y)) ) )
-	       callargs) ) ) ]
-	   [else #f] ) ) ) )
-
-(rewrite 
- '- 8 
- (lambda (db classargs cont callargs)
-   ;; (- <x>) -> (##core#inline "C_fixnum_negate" <x>)  [fixnum-mode]
-   ;; (- <x>) -> (##core#inline "C_u_fixnum_negate" <x>)  [fixnum-mode + unsafe]
-   ;; (- <x1> ...) -> (##core#inline "C_fixnum_difference" <x1> (##core#inline "C_fixnum_difference" ...)) [fixnum-mode]
-   ;; (- <x1> ...) -> (##core#inline "C_u_fixnum_difference" <x1> (##core#inline "C_u_fixnum_difference" ...)) 
-   ;;    [fixnum-mode + unsafe]
-   ;; - Remove "0" from arguments, if more than 1.
-   (cond [(null? callargs) #f]
-	 [(and (null? (cdr callargs)) (eq? number-type 'fixnum))
-	  (make-node
-	   '##core#call (list #t)
-	   (list cont
-		 (make-node '##core#inline
-			    (if unsafe '("C_u_fixnum_negate") '("C_fixnum_negate"))
-			    callargs)) ) ]
-	 [else
-	  (let ([callargs
-		 (cons (car callargs)
-		       (remove
-			(lambda (x)
-			  (and (eq? 'quote (node-class x))
-			       (zero? (first (node-parameters x))) ) ) 
-			(cdr callargs) ) ) ] )
-	    (and (eq? number-type 'fixnum)
-		 (>= (length callargs) 2)
-		 (make-node
-		  '##core#call (list #t)
-		  (list 
-		   cont
-		   (fold-inner
-		    (lambda (x y)
-		      (make-node '##core#inline 
-				 (if unsafe '("C_u_fixnum_difference") '("C_fixnum_difference"))
-				 (list x y) ) )
-		    callargs) ) ) ) ) ] ) ) )
-
-(rewrite 
- '/ 8 
- (lambda (db classargs cont callargs)
-   ;; (/ <x1> ...) -> (##core#inline "C_fixnum_divide" <x1> (##core#inline "C_fixnum_divide" ...)) [fixnum-mode]
-   ;; - Remove "1" from arguments, if more than 1.
-   ;; - Replace divisions by 2 with shift right. [fixnum-mode]
-   (and (>= (length callargs) 2)
-	(let ([callargs
-	       (cons (car callargs)
-		     (remove
-		      (lambda (x)
-			(and (eq? 'quote (node-class x))
-			     (eq? 1 (first (node-parameters x))) ) ) 
-		      (cdr callargs) ) ) ] )
-	  (and (eq? number-type 'fixnum)
-	       (>= (length callargs) 2)
-	       (make-node
-		'##core#call (list #t)
-		(list
-		 cont
-		 (fold-inner
-		  (lambda (x y)
-		    (if (and (eq? 'quote (node-class y)) (eq? 2 (first (node-parameters y))))
-			(make-node '##core#inline '("C_fixnum_shift_right") (list x (qnode 1)))
-			(make-node '##core#inline '("C_fixnum_divide") (list x y)) ) )
-		  callargs) ) ) ) ) ) ) )
-
-(rewrite
- 'quotient 8
- (lambda (db classargs cont callargs)
-   ;; (quotient <x> 2) -> (##core#inline "C_fixnum_shift_right" <x> 1) [fixnum-mode]
-   ;; (quotient <x> <y>) -> (##core#inline "C_fixnum_divide" <x> <y>) [fixnum-mode]
-   ;; (quotient <x> <y>) -> ((##core#proc "C_quotient") <x> <y>)
-   (and (= (length callargs) 2)
-	(if (eq? 'fixnum number-type)
-	    (make-node
-	     '##core#call (list #t)
-	     (let ([arg2 (second callargs)])
-	       (list cont 
-		     (if (and (eq? 'quote (node-class arg2)) 
-			      (eq? 2 (first (node-parameters arg2))) )
-			 (make-node 
-			  '##core#inline '("C_fixnum_shift_right") 
-			  (list (first callargs) (qnode 1)) )
-			 (make-node '##core#inline '("C_fixnum_divide") callargs) ) ) ) )
-	    (make-node
-	     '##core#call (list #t)
-	     (cons* (make-node '##core#proc '("C_quotient" #t) '()) cont callargs) ) ) ) ) )
-
-(let ()
-  ;; (add1 <x>) -> (##core#inline "C_fixnum_increase" <x>)     [fixnum-mode]
-  ;; (add1 <x>) -> (##core#inline "C_u_fixnum_increase" <x>)   [fixnum-mode + unsafe]
-  ;; (add1 <x>) -> (##core#inline_allocate ("C_a_i_plus" 4) <x> 1) 
-  ;; (sub1 <x>) -> (##core#inline "C_fixnum_decrease" <x>)     [fixnum-mode]
-  ;; (sub1 <x>) -> (##core#inline "C_u_fixnum_decrease" <x>)   [fixnum-mode + unsafe]
-  ;; (sub1 <x>) -> (##core#inline_allocate ("C_a_i_minus" 4) <x> 1) 
-  (define ((op1 fiop ufiop aiop) db classargs cont callargs)
-    (and (= (length callargs) 1)
-	 (make-node
-	  '##core#call (list #t)
-	  (list 
-	   cont
-	   (if (eq? 'fixnum number-type)
-	       (make-node '##core#inline (list (if unsafe ufiop fiop)) callargs)
-	       (make-node
-		'##core#inline_allocate (list aiop 4)
-		(list (car callargs) (qnode 1))))))))
-  (rewrite 'add1 8 (op1 "C_fixnum_increase" "C_u_fixnum_increase" "C_a_i_plus"))
-  (rewrite 'sub1 8 (op1 "C_fixnum_decrease" "C_u_fixnum_decrease" "C_a_i_minus")))
 
 (let ()
   (define (eqv?-id db classargs cont callargs)
@@ -639,6 +501,7 @@
 (rewrite 'fxmin 2 2 "C_i_fixnum_min" #t)
 (rewrite 'fpmax 2 2 "C_i_flonum_max" #f)
 (rewrite 'fpmin 2 2 "C_i_flonum_min" #f)
+(rewrite 'fxgcd 2 2 "C_i_fixnum_gcd" #t)
 (rewrite 'fxlen 2 1 "C_i_fixnum_length" #t)
 (rewrite 'char-numeric? 2 1 "C_u_i_char_numericp" #t)
 (rewrite 'char-alphabetic? 2 1 "C_u_i_char_alphabeticp" #t)
@@ -668,7 +531,6 @@
 (rewrite 'set-cdr! 17 2 "C_i_set_cdr" "C_u_i_set_cdr")
 
 (rewrite 'abs 14 'fixnum 1 "C_fixnum_abs" "C_fixnum_abs")
-(rewrite 'abs 16 1 "C_a_i_abs" #t words-per-flonum)
 (rewrite 'integer-length 14 'fixnum 1 "C_i_fixnum_length" "C_i_fixnum_length")
 
 (rewrite 'bitwise-xor 21 0 "C_fixnum_xor" "C_fixnum_xor" "C_a_i_bitwise_xor" words-per-flonum)
@@ -683,6 +545,7 @@
 (rewrite 'fp/ 16 2 "C_a_i_flonum_quotient" #f words-per-flonum)
 (rewrite 'fp/? 16 2 "C_a_i_flonum_quotient_checked" #f words-per-flonum)
 (rewrite 'fpneg 16 1 "C_a_i_flonum_negate" #f words-per-flonum)
+(rewrite 'fpgcd 16 2 "C_a_i_flonum_gcd" #f words-per-flonum)
 
 (rewrite 'exp 16 1 "C_a_i_exp" #t words-per-flonum)
 (rewrite 'sin 16 1 "C_a_i_sin" #t words-per-flonum)
@@ -770,10 +633,6 @@
 (rewrite 'lcm 18 1)
 (rewrite 'list 18 '())
 
-(rewrite '* 16 2 "C_a_i_times" #t 4)	; words-per-flonum
-(rewrite '+ 16 2 "C_a_i_plus" #t 4)	; words-per-flonum
-(rewrite '- 16 2 "C_a_i_minus" #t 4)	; words-per-flonum
-(rewrite '/ 16 2 "C_a_i_divide" #t 4)	; words-per-flonum
 (rewrite 'exact->inexact 16 1 "C_a_i_exact_to_inexact" #t 4) ; words-per-flonum
 
 (rewrite '= 17 2 "C_i_nequalp")
@@ -782,10 +641,6 @@
 (rewrite '>= 17 2 "C_i_greater_or_equalp")
 (rewrite '<= 17 2 "C_i_less_or_equalp")
 
-(rewrite '* 13 "C_times" #t)
-(rewrite '- 13 "C_minus" #t)
-(rewrite '+ 13 "C_plus" #t)
-(rewrite '/ 13 "C_divide" #t)
 (rewrite '= 13 "C_nequalp" #t)
 (rewrite '> 13 "C_greaterp" #t)
 (rewrite '< 13 "C_lessp" #t)
@@ -890,6 +745,7 @@
 (rewrite 'fxior 17 2 "C_fixnum_or" "C_u_fixnum_or")
 (rewrite 'fx/ 17 2 "C_fixnum_divide" "C_u_fixnum_divide")
 (rewrite 'fxmod 17 2 "C_fixnum_modulo" "C_u_fixnum_modulo")
+(rewrite 'fxrem 17 2 "C_i_fixnum_remainder_checked")
 
 (rewrite
  'arithmetic-shift 8

@@ -596,6 +596,7 @@ The following extended bindings are handled specially:
 {{fxneg}}
 {{fxnot}}
 {{fxodd?}}
+{{fxrem}}
 {{fxshl}}
 {{fxshr}}
 {{fxxor}}
