@@ -670,6 +670,8 @@ EOF
 
 (include "posix-common.scm")
 
+(import chicken.ports)
+
 
 ;;; Lo-level I/O:
 

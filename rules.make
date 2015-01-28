@@ -489,6 +489,11 @@ define declare-emitted-import-lib-dependency
 $(1).import.scm: $(1).c
 endef
 
+define declare-emitted-chicken-import-lib-dependency
+.SECONDARY: chicken.$(1).import.scm
+chicken.$(1).import.scm: $(1).c
+endef
+
 define declare-emitted-compiler-import-lib-dependency
 .SECONDARY: chicken.compiler.$(1).import.scm
 chicken.compiler.$(1).import.scm: $(1).c
@@ -496,6 +501,9 @@ endef
 
 $(foreach lib, $(SETUP_API_OBJECTS_1),\
           $(eval $(call declare-emitted-import-lib-dependency,$(lib))))
+
+$(foreach lib, $(DYNAMIC_IMPORT_LIBRARIES),\
+          $(eval $(call declare-emitted-chicken-import-lib-dependency,$(lib))))
 
 $(foreach lib, $(filter-out chicken,$(COMPILER_OBJECTS_1)),\
           $(eval $(call declare-emitted-compiler-import-lib-dependency,$(lib))))
@@ -526,11 +534,37 @@ core.c: core.scm \
 optimizer.c: optimizer.scm \
 		chicken.compiler.support.import.scm
 scrutinizer.c: scrutinizer.scm \
-		chicken.compiler.support.import.scm
+		chicken.compiler.support.import.scm \
+		chicken.ports.import.scm
 lfa2.c: lfa2.scm chicken.compiler.support.import.scm
 compiler-syntax.c: compiler-syntax.scm \
 		chicken.compiler.support.import.scm \
 		chicken.compiler.core.import.scm
+support.c: support.scm \
+		chicken.ports.import.scm
+csi.c: csi.scm \
+		chicken.ports.import.scm
+chicken-status.c: chicken-status.scm \
+		chicken.ports.import.scm \
+		setup-api.import.scm
+chicken-install.c: chicken-install.scm \
+		chicken.ports.import.scm \
+		setup-api.import.scm \
+		setup-download.import.scm
+chicken-uninstall.c: chicken-uninstall.scm \
+		chicken.ports.import.scm \
+		setup-api.import.scm
+setup-api.c: setup-api.scm \
+		chicken.ports.import.scm
+setup-download.c: setup-download.scm \
+		chicken.ports.import.scm \
+		setup-api.import.scm
+posixunix.c: posixunix.scm \
+		chicken.ports.import.scm
+posixwin.c: posixwin.scm \
+		chicken.ports.import.scm
+tcp.c: tcp.scm \
+		chicken.ports.import.scm
 
 define profile-flags
 $(if $(filter $(basename $(1)),$(PROFILE_OBJECTS)),-profile)
@@ -554,9 +588,6 @@ posixwin.c: $(SRCDIR)posixwin.scm $(SRCDIR)posix-common.scm $(SRCDIR)common-decl
 	$(bootstrap-lib) 
 irregex.c: $(SRCDIR)irregex.scm $(SRCDIR)irregex-core.scm $(SRCDIR)irregex-utils.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib)
-#
-# The ones below just depend on their matching .scm file and common-declarations
-#
 chicken-syntax.c: $(SRCDIR)chicken-syntax.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib)
 chicken-ffi-syntax.c: $(SRCDIR)chicken-ffi-syntax.scm $(SRCDIR)common-declarations.scm
@@ -564,7 +595,7 @@ chicken-ffi-syntax.c: $(SRCDIR)chicken-ffi-syntax.scm $(SRCDIR)common-declaratio
 data-structures.c: $(SRCDIR)data-structures.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib)
 ports.c: $(SRCDIR)ports.scm $(SRCDIR)common-declarations.scm
-	$(bootstrap-lib)
+	$(bootstrap-lib) -emit-import-library chicken.ports
 files.c: $(SRCDIR)files.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib)
 lolevel.c: $(SRCDIR)lolevel.scm $(SRCDIR)common-declarations.scm
@@ -610,7 +641,7 @@ csi.c: $(SRCDIR)csi.scm $(SRCDIR)banner.scm
 	$(CHICKEN) $< $(CHICKEN_PROGRAM_OPTIONS) -output-file $@
 chicken-profile.c: $(SRCDIR)chicken-profile.scm
 	$(CHICKEN) $< $(CHICKEN_PROGRAM_OPTIONS) -output-file $@ 
-chicken-install.c: $(SRCDIR)chicken-install.scm setup-download.c setup-api.c
+chicken-install.c: $(SRCDIR)chicken-install.scm
 	$(CHICKEN) $< $(CHICKEN_PROGRAM_OPTIONS) -output-file $@ 
 chicken-uninstall.c: $(SRCDIR)chicken-uninstall.scm
 	$(CHICKEN) $< $(CHICKEN_PROGRAM_OPTIONS) -output-file $@ 
@@ -624,7 +655,7 @@ chicken-bug.c: $(SRCDIR)chicken-bug.scm
 setup-api.c: $(SRCDIR)setup-api.scm
 	$(CHICKEN) $< $(CHICKEN_DYNAMIC_OPTIONS) -emit-import-library setup-api \
 	  -output-file $@ 
-setup-download.c: $(SRCDIR)setup-download.scm setup-api.c
+setup-download.c: $(SRCDIR)setup-download.scm
 	$(CHICKEN) $< $(CHICKEN_DYNAMIC_OPTIONS) -emit-import-library setup-download \
 	  -output-file $@ 
 
@@ -659,9 +690,9 @@ clean:
 	  $(LIBCHICKEN_SO_FILE) \
 	  $(PRIMARY_LIBCHICKEN) \
 	  lib$(PROGRAM_PREFIX)chicken$(PROGRAM_SUFFIX)$(A) \
-	  $(PROGRAM_IMPORT_LIBRARIES) \
 	  $(IMPORT_LIBRARIES:=.import.so) $(LIBCHICKEN_IMPORT_LIBRARY) \
-	  $(SETUP_API_OBJECTS_1:=.so) $(SETUP_API_OBJECTS_1:=.import.so)
+	  $(SETUP_API_OBJECTS_1:=.so) $(SETUP_API_OBJECTS_1:=.import.so) \
+	  $(foreach lib,$(DYNAMIC_IMPORT_LIBRARIES),chicken.$(lib).import.scm)
 ifdef USES_SONAME
 	$(REMOVE_COMMAND) $(REMOVE_COMMAND_OPTIONS) lib$(PROGRAM_PREFIX)chicken$(PROGRAM_SUFFIX).so.$(BINARYVERSION)
 endif

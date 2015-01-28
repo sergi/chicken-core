@@ -75,7 +75,8 @@
      ;; in a lot of other places.
      number-type unsafe)
 
-(import chicken scheme foreign data-structures srfi-1 files extras ports)
+(import chicken scheme foreign data-structures srfi-1 files extras
+	chicken.ports)
 
 (include "tweaks")
 (include "banner")
