@@ -1,6 +1,22 @@
 (require-extension extras)
 
-(include "../mini-srfi-1.scm")
+(define (list-tabulate n proc)
+  (let loop ((i 0))
+    (if (fx>= i n)
+	'()
+	(cons (proc i) (loop (fx+ i 1))))))
+
+(define-for-syntax (list-tabulate n proc)
+  (let loop ((i 0))
+    (if (fx>= i n)
+	'()
+	(cons (proc i) (loop (fx+ i 1))))))
+
+(define (last lst)
+  (let loop ((lst lst))
+    (if (null? (cdr lst))
+	(car lst)
+	(loop (cdr lst)))))
 
 (define max-argcount ##sys#apply-argument-limit)
 
