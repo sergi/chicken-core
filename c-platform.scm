@@ -534,12 +534,6 @@
 (rewrite 'abs 14 'fixnum 1 "C_fixnum_abs" "C_fixnum_abs")
 (rewrite 'integer-length 14 'fixnum 1 "C_i_fixnum_length" "C_i_fixnum_length")
 
-(rewrite 'bitwise-xor 21 0 "C_fixnum_xor" "C_fixnum_xor" "C_a_i_bitwise_xor" words-per-flonum)
-(rewrite 'bitwise-and 21 -1 "C_fixnum_and" "C_u_fixnum_and" "C_a_i_bitwise_and" words-per-flonum)
-(rewrite 'bitwise-ior 21 0 "C_fixnum_or" "C_u_fixnum_or" "C_a_i_bitwise_ior" words-per-flonum)
-
-(rewrite 'bitwise-not 22 1 "C_a_i_bitwise_not" #t words-per-flonum "C_fixnum_not")
-
 (rewrite 'fp+ 16 2 "C_a_i_flonum_plus" #f words-per-flonum)
 (rewrite 'fp- 16 2 "C_a_i_flonum_difference" #f words-per-flonum)
 (rewrite 'fp* 16 2 "C_a_i_flonum_times" #f words-per-flonum)
@@ -734,34 +728,6 @@
 (rewrite 'fxmod 17 2 "C_fixnum_modulo" "C_u_fixnum_modulo")
 (rewrite 'fxrem 17 2 "C_i_fixnum_remainder_checked")
 
-(rewrite
- 'arithmetic-shift 8
- (lambda (db classargs cont callargs)
-   ;; (arithmetic-shift <x> <-int>) -> (##core#inline "C_fixnum_shift_right" <x> -<int>)
-   ;; (arithmetic-shift <x> <+int>) -> (##core#inline "C_fixnum_shift_left" <x> <int>)
-   ;; _ -> (##core#inline "C_a_i_arithmetic_shift" <x> <y>)
-   ;; not in fixnum-mode: _ -> (##core#inline_allocate ("C_a_i_arithmetic_shift" words-per-flonum) <x> <y>)
-   (and (= 2 (length callargs))
-	(let ([val (second callargs)])
-	  (make-node
-	   '##core#call (list #t)
-	   (list cont
-		 (or (and-let* ([(eq? 'quote (node-class val))]
-				[(eq? number-type 'fixnum)]
-				[n (first (node-parameters val))]
-				[(and (fixnum? n) (not (big-fixnum? n)))] )
-		       (if (negative? n)
-			   (make-node 
-			    '##core#inline '("C_fixnum_shift_right")
-			    (list (first callargs) (qnode (- n))) )
-			   (make-node
-			    '##core#inline '("C_fixnum_shift_left")
-			    (list (first callargs) val) ) ) )
-		     (if (eq? number-type 'fixnum)
-			 (make-node '##core#inline '("C_i_fixnum_arithmetic_shift") callargs)
-			 (make-node '##core#inline_allocate (list "C_a_i_arithmetic_shift" words-per-flonum) 
-				    callargs) ) ) ) ) ) ) ) )
-
 (rewrite '##sys#byte 17 2 "C_subbyte")
 (rewrite '##sys#setbyte 17 3 "C_setbyte")
 (rewrite '##sys#peek-fixnum 17 2 "C_peek_fixnum")
@@ -950,18 +916,6 @@
 		     (make-node 
 		      '##core#inline '("C_anyp")
 		      (list arg)) ) ) ) ) ) ) )
-
-(rewrite
- 'bit-set? 8
- (lambda (db classargs cont callargs)
-   (and (= 2 (length callargs))
-	(make-node
-	 '##core#call (list #t)
-	 (list cont
-	       (make-node
-		'##core#inline 
-		(list (if (eq? number-type 'fixnum) "C_u_i_bit_setp" "C_i_bit_setp"))
-		callargs) ) ) ) ) )
 
 (rewrite 'read-char 23 0 '##sys#read-char/port '##sys#standard-input)
 (rewrite 'write-char 23 1 '##sys#write-char/port '##sys#standard-output)
