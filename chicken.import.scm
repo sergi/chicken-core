@@ -75,6 +75,8 @@
    errno
    error
    exact-integer?
+   exact-integer-sqrt
+   exact-integer-nth-root
    exit
    exit-handler
    expand
