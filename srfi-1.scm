@@ -236,7 +236,7 @@
 
 (define (make-list len . maybe-elt)
 ;  (check-arg (lambda (n) (and (integer? n) (>= n 0))) len make-list)
-  (##sys#check-exact len 'make-list)
+  (##sys#check-fixnum len 'make-list)
   (let ((elt (cond ((null? maybe-elt) #f) ; Default value
 		   ((null? (cdr maybe-elt)) (car maybe-elt))
 		   (else (##sys#error 'make-list "Too many arguments to MAKE-LIST"
@@ -254,7 +254,7 @@
 (define (list-tabulate len proc)
 ;  (check-arg (lambda (n) (and (integer? n) (>= n 0))) len list-tabulate)
 ;  (check-arg procedure? proc list-tabulate)
-  (##sys#check-exact len 'list-tabulate)
+  (##sys#check-fixnum len 'list-tabulate)
   (do ((i (fx- len 1) (fx- i 1))
        (ans '() (cons (proc i) ans)))
       ((fx< i 0) ans)))
@@ -497,7 +497,7 @@
 ;;; take & drop
 
 (define (take lis k)
-  (##sys#check-exact k 'take)
+  (##sys#check-fixnum k 'take)
 ;  (check-arg integer? k take)
   (let recur ((lis lis) (k k))
     (if (eq? 0 k) '()
@@ -505,13 +505,13 @@
 	      (recur (cdr lis) (fx- k 1))))))
 
 (define (drop lis k)
-  (##sys#check-exact k 'drop)
+  (##sys#check-fixnum k 'drop)
 ;  (check-arg integer? k drop)
   (let iter ((lis lis) (k k))
     (if (eq? 0 k) lis (iter (cdr lis) (fx- k 1)))))
 
 (define (take! lis k)
-  (##sys#check-exact k 'take!)
+  (##sys#check-fixnum k 'take!)
 ;  (check-arg integer? k take!)
   (if (eq? 0 k) '()
       (begin (set-cdr! (drop lis (fx- k 1)) '())
@@ -595,7 +595,7 @@
 ;      (list-tail lis k)))
 
 (define (split-at x k)
-  (##sys#check-exact k 'split-at)
+  (##sys#check-fixnum k 'split-at)
 ;  (check-arg integer? k split-at)
   (let recur ((lis x) (k k))
     (if (eq? 0 k) (values '() lis)
@@ -603,7 +603,7 @@
 	  (values (cons (car lis) prefix) suffix)))))
 
 (define (split-at! x k)
-  (##sys#check-exact k 'split-at!)
+  (##sys#check-fixnum k 'split-at!)
 ;  (check-arg integer? k split-at!)
   (if (eq? 0 k) (values '() x)
       (let* ((prev (drop x (fx- k 1)))
