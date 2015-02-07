@@ -62,6 +62,8 @@
    pointer-s16-set!
    pointer-s32-ref
    pointer-s32-set!
+   pointer-s64-ref
+   pointer-s64-set!
    pointer-s8-ref
    pointer-s8-set!
    pointer-vector
@@ -74,6 +76,8 @@
    pointer-u16-set!
    pointer-u32-ref
    pointer-u32-set!
+   pointer-u64-ref
+   pointer-u64-set!
    pointer-u8-ref
    pointer-u8-set!
    pointer=?
