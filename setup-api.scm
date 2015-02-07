@@ -66,8 +66,9 @@
      setup-error-handling)
   
   (import scheme chicken foreign
-	  irregex utils posix extras data-structures srfi-1 files
-	  chicken.ports)
+	  irregex posix extras data-structures srfi-1 files
+	  chicken.ports
+	  chicken.utils)
 
 ;;; Constants, variables and parameters
 

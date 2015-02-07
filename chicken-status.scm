@@ -24,13 +24,13 @@
 ; POSSIBILITY OF SUCH DAMAGE.
 
 
-(require-library setup-api srfi-1 posix data-structures utils ports irregex files)
+(require-library setup-api srfi-1 posix data-structures ports irregex files)
 
 
 (module main ()
   
   (import scheme chicken foreign)
-  (import srfi-1 posix data-structures utils irregex files setup-api extras)
+  (import srfi-1 posix data-structures irregex files setup-api extras)
   (import chicken.ports)
 
   (define-foreign-variable C_TARGET_LIB_HOME c-string)

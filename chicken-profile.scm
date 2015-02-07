@@ -29,8 +29,7 @@
   (block)
   (uses srfi-1
 	data-structures
-	posix
-	utils))
+	posix))
 
 (define symbol-table-size 3001)
 

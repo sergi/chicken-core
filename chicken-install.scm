@@ -29,11 +29,12 @@
 
 (module main ()
 
-  (import scheme chicken srfi-1 posix data-structures utils irregex extras files)
+  (import scheme chicken srfi-1 posix data-structures irregex extras files)
   (import setup-download setup-api)
 
   (import foreign)
-  (import chicken.ports)
+  (import chicken.ports
+	  chicken.utils)
 
   (define +default-repository-files+
     ;;XXX keep this up-to-date!
@@ -41,6 +42,7 @@
       "setup-download.so" "setup-download.import.so"
       "chicken.import.so"
       "chicken.ports.import.so"
+      "chicken.utils.import.so"
       "lolevel.import.so"
       "srfi-1.import.so"
       "srfi-4.import.so"
@@ -50,7 +52,6 @@
       "extras.import.so"
       "tcp.import.so"
       "foreign.import.so"
-      "utils.import.so"
       "csi.import.so"
       "irregex.import.so"
       "types.db"))

@@ -37,8 +37,9 @@
 			temporary-directory)
 
   (import scheme chicken foreign)
-  (import extras irregex posix utils srfi-1 data-structures tcp files
-	  setup-api)
+  (import extras irregex posix srfi-1 data-structures tcp files
+	  setup-api
+	  chicken.utils)
 
   (define-constant +default-tcp-connect-timeout+ 30000) ; 30 seconds
   (define-constant +default-tcp-read/write-timeout+ 30000) ; 30 seconds
