@@ -36,7 +36,8 @@
 (include "tweaks")
 (import chicken.compiler.batch-driver 
 	chicken.compiler.c-platform
-        chicken.utils)
+	chicken.data-structures
+	chicken.utils)
 
 ;;; Prefix argument list with default options:
 

@@ -33,8 +33,9 @@
   
   (import scheme chicken foreign)
   (import setup-api)
-  (import srfi-1 posix data-structures irregex files)
-  (import chicken.ports
+  (import srfi-1 posix irregex files)
+  (import chicken.data-structures
+	  chicken.ports
 	  chicken.utils)
 
   (define-foreign-variable C_TARGET_LIB_HOME c-string)

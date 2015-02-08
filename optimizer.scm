@@ -36,7 +36,8 @@
      eq-inline-operator membership-test-operators membership-unfold-limit
      default-optimization-passes rewrite)
 
-(import chicken scheme srfi-1 data-structures
+(import chicken scheme srfi-1
+	chicken.data-structures
 	chicken.compiler.support)
 
 (include "tweaks")

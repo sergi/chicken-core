@@ -30,8 +30,9 @@
 (module main ()
   
   (import scheme chicken foreign)
-  (import srfi-1 posix data-structures irregex files setup-api extras)
-  (import chicken.ports)
+  (import srfi-1 posix irregex files setup-api extras)
+  (import chicken.data-structures
+	  chicken.ports)
 
   (define-foreign-variable C_TARGET_LIB_HOME c-string)
   (define-foreign-variable C_BINARY_VERSION int)

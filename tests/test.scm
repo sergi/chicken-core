@@ -2,6 +2,7 @@
 ;
 ; by Alex Shinn, lifted from match-test by felix
 
+(use (only data-structures ->string))
 
 (define *pass* 0)
 (define *fail* 0)

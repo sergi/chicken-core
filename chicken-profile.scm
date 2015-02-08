@@ -31,6 +31,8 @@
 	data-structures
 	posix))
 
+(import chicken.data-structures)
+
 (define symbol-table-size 3001)
 
 (define sort-by #f)

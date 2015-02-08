@@ -29,7 +29,8 @@
   (block)
   (uses data-structures srfi-1 utils files extras))
 
-(import chicken.utils)
+(import chicken.data-structures
+	chicken.utils)
 
 (define-foreign-variable INSTALL_BIN_HOME c-string "C_INSTALL_BIN_HOME")
 (define-foreign-variable INSTALL_CC c-string "C_INSTALL_CC")

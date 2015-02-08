@@ -28,6 +28,22 @@
 (declare
  (unit data-structures))
 
+(module chicken.data-structures
+  (alist-ref alist-update alist-update! atom? butlast
+   chop compress flatten intersperse join rassoc tail?
+   merge sort sorted? topological-sort
+   conc ->string string-chop string-chomp
+   string-compare3 string-compare3-ci
+   reverse-string-append
+   string-intersperse string-split
+   string-translate string-translate*
+   substring=? substring-ci=?
+   substring-index substring-index-ci
+   any? constantly complement compose
+   conjoin disjoin each flip identity list-of? o)
+
+(import scheme chicken foreign)
+
 (include "common-declarations.scm")
 
 (register-feature! 'data-structures)
@@ -90,7 +106,7 @@
   (lambda (lst)
     (let loop ([lst lst])
       (cond [(null? lst) #t]
-	    [(not-pair? lst) #f]
+	    [(not (pair? lst)) #f]
 	    [(pred (##sys#slot lst 0)) (loop (##sys#slot lst 1))]
 	    [else #f] ) ) ) )
 
@@ -763,3 +779,5 @@
                      (cdar dag)
                      '()
                      state)))))
+
+)
