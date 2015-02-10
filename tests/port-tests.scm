@@ -1,4 +1,4 @@
-(require-extension data-structures srfi-1 ports utils srfi-4 extras tcp posix)
+(require-extension data-structures files ports srfi-4 tcp utils)
 
 (include "test.scm")
 (test-begin)

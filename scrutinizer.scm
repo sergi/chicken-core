@@ -33,9 +33,10 @@
     (scrutinize load-type-database emit-type-file
      validate-type check-and-validate-type install-specializations)
 
-(import chicken scheme srfi-1 extras files
+(import chicken scheme srfi-1 extras
 	chicken.compiler.support
 	chicken.data-structures
+	chicken.files
 	chicken.ports)
 
 (include "tweaks")

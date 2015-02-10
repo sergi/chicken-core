@@ -522,7 +522,8 @@ batch-driver.c: batch-driver.scm \
 		chicken.compiler.lfa2.import.scm \
 		chicken.compiler.c-backend.import.scm \
 		chicken.compiler.support.import.scm \
-		chicken.data-structures.import.scm
+		chicken.data-structures.import.scm \
+		chicken.files.import.scm
 c-platform.c: c-platform.scm \
 		chicken.compiler.optimizer.import.scm \
 		chicken.compiler.support.import.scm \
@@ -543,6 +544,7 @@ optimizer.c: optimizer.scm \
 scrutinizer.c: scrutinizer.scm \
 		chicken.compiler.support.import.scm \
 		chicken.data-structures.import.scm \
+		chicken.files.import.scm \
 		chicken.ports.import.scm
 lfa2.c: lfa2.scm \
 		chicken.compiler.support.import.scm
@@ -554,9 +556,11 @@ chicken-ffi-syntax.c: chicken-ffi-syntax.scm \
 		chicken.data-structures.import.scm
 support.c: support.scm \
 		chicken.data-structures.import.scm \
+		chicken.files.import.scm \
 		chicken.ports.import.scm
 csc.c: csc.scm \
 		chicken.data-structures.import.scm \
+		chicken.files.import.scm \
 		chicken.utils.import.scm
 csi.c: csi.scm \
 		chicken.data-structures.import.scm \
@@ -569,32 +573,39 @@ chicken-profile.c: chicken-profile.scm \
 		chicken.data-structures.import.scm
 chicken-status.c: chicken-status.scm \
 		chicken.data-structures.import.scm \
+		chicken.files.import.scm \
 		chicken.ports.import.scm \
 		setup-api.import.scm
 chicken-install.c: chicken-install.scm \
 		chicken.data-structures.import.scm \
+		chicken.files.import.scm \
 		chicken.ports.import.scm \
 		chicken.utils.import.scm \
 		setup-api.import.scm \
 		setup-download.import.scm
 chicken-uninstall.c: chicken-uninstall.scm \
 		chicken.data-structures.import.scm \
+		chicken.files.import.scm \
 		chicken.ports.import.scm \
 		chicken.utils.import.scm \
 		setup-api.import.scm
 setup-api.c: setup-api.scm \
 		chicken.data-structures.import.scm \
+		chicken.files.import.scm \
 		chicken.ports.import.scm \
 		chicken.utils.import.scm
 setup-download.c: setup-download.scm \
 		chicken.data-structures.import.scm \
+		chicken.files.import.scm \
 		chicken.ports.import.scm \
 		chicken.tcp.import.scm \
 		chicken.utils.import.scm \
 		setup-api.import.scm
 posixunix.c: posixunix.scm \
+		chicken.files.import.scm \
 		chicken.ports.import.scm
 posixwin.c: posixwin.scm \
+		chicken.files.import.scm \
 		chicken.ports.import.scm
 extras.c: extras.scm \
 		chicken.data-structures.import.scm
@@ -603,7 +614,8 @@ files.c: files.scm \
 tcp.c: tcp.scm \
 		chicken.ports.import.scm
 utils.c: utils.scm \
-		chicken.data-structures.import.scm
+		chicken.data-structures.import.scm \
+		chicken.files.import.scm
 
 define profile-flags
 $(if $(filter $(basename $(1)),$(PROFILE_OBJECTS)),-profile)
@@ -636,7 +648,7 @@ data-structures.c: $(SRCDIR)data-structures.scm $(SRCDIR)common-declarations.scm
 ports.c: $(SRCDIR)ports.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib) -emit-import-library chicken.ports
 files.c: $(SRCDIR)files.scm $(SRCDIR)common-declarations.scm
-	$(bootstrap-lib)
+	$(bootstrap-lib) -emit-import-library chicken.files
 lolevel.c: $(SRCDIR)lolevel.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib) 
 tcp.c: $(SRCDIR)tcp.scm $(SRCDIR)common-declarations.scm

@@ -40,8 +40,9 @@
      user-options-pass user-read-pass user-preprocessor-pass user-pass
      user-post-analysis-pass)
 
-(import chicken scheme extras files srfi-1
+(import chicken scheme extras srfi-1
 	chicken.data-structures
+	chicken.files
 	chicken.compiler.support
 	chicken.compiler.compiler-syntax
 	chicken.compiler.core
