@@ -527,6 +527,7 @@ batch-driver.c: batch-driver.scm \
 		chicken.compiler.c-backend.import.scm \
 		chicken.compiler.support.import.scm \
 		chicken.data-structures.import.scm \
+		chicken.extras.import.scm \
 		chicken.files.import.scm
 c-platform.c: c-platform.scm \
 		chicken.compiler.optimizer.import.scm \
@@ -541,13 +542,15 @@ c-backend.c: c-backend.scm \
 core.c: core.scm \
 		chicken.compiler.scrutinizer.import.scm \
 		chicken.compiler.support.import.scm \
-		chicken.data-structures.import.scm
+		chicken.data-structures.import.scm \
+		chicken.extras.import.scm
 optimizer.c: optimizer.scm \
 		chicken.compiler.support.import.scm \
 		chicken.data-structures.import.scm
 scrutinizer.c: scrutinizer.scm \
 		chicken.compiler.support.import.scm \
 		chicken.data-structures.import.scm \
+		chicken.extras.import.scm \
 		chicken.files.import.scm \
 		chicken.ports.import.scm
 lfa2.c: lfa2.scm \
@@ -560,6 +563,7 @@ chicken-ffi-syntax.c: chicken-ffi-syntax.scm \
 		chicken.data-structures.import.scm
 support.c: support.scm \
 		chicken.data-structures.import.scm \
+		chicken.extras.import.scm \
 		chicken.files.import.scm \
 		chicken.ports.import.scm
 csc.c: csc.scm \
@@ -568,21 +572,25 @@ csc.c: csc.scm \
 		chicken.utils.import.scm
 csi.c: csi.scm \
 		chicken.data-structures.import.scm \
+		chicken.extras.import.scm \
 		chicken.ports.import.scm
 chicken-bug.c: chicken-bug.scm \
 		chicken.data-structures.import.scm \
+		chicken.extras.import.scm \
 		chicken.tcp.import.scm \
 		chicken.utils.import.scm
 chicken-profile.c: chicken-profile.scm \
 		chicken.data-structures.import.scm
 chicken-status.c: chicken-status.scm \
 		chicken.data-structures.import.scm \
+		chicken.extras.import.scm \
 		chicken.files.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
 		setup-api.import.scm
 chicken-install.c: chicken-install.scm \
 		chicken.data-structures.import.scm \
+		chicken.extras.import.scm \
 		chicken.files.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
@@ -598,12 +606,14 @@ chicken-uninstall.c: chicken-uninstall.scm \
 		setup-api.import.scm
 setup-api.c: setup-api.scm \
 		chicken.data-structures.import.scm \
+		chicken.extras.import.scm \
 		chicken.files.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
 		chicken.utils.import.scm
 setup-download.c: setup-download.scm \
 		chicken.data-structures.import.scm \
+		chicken.extras.import.scm \
 		chicken.files.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
@@ -619,11 +629,15 @@ posixwin.c: posixwin.scm \
 extras.c: extras.scm \
 		chicken.data-structures.import.scm
 files.c: files.scm \
-		chicken.data-structures.import.scm
+		chicken.data-structures.import.scm \
+		chicken.extras.import.scm
+ports.c: ports.scm \
+		chicken.extras.import.scm
 tcp.c: tcp.scm \
 		chicken.ports.import.scm
 utils.c: utils.scm \
 		chicken.data-structures.import.scm \
+		chicken.extras.import.scm \
 		chicken.files.import.scm \
 		chicken.posix.import.scm
 
@@ -642,7 +656,7 @@ expand.c: $(SRCDIR)expand.scm $(SRCDIR)synrules.scm $(SRCDIR)common-declarations
 modules.c: $(SRCDIR)modules.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib)
 extras.c: $(SRCDIR)extras.scm $(SRCDIR)common-declarations.scm
-	$(bootstrap-lib)
+	$(bootstrap-lib) -emit-import-library chicken.extras
 posixunix.c: $(SRCDIR)posixunix.scm $(SRCDIR)posix-common.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib) -emit-import-library chicken.posix
 posixwin.c: $(SRCDIR)posixwin.scm $(SRCDIR)posix-common.scm $(SRCDIR)common-declarations.scm
