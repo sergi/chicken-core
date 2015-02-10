@@ -31,7 +31,8 @@
 	data-structures
 	posix))
 
-(import chicken.data-structures)
+(import chicken.data-structures
+	chicken.posix)
 
 (define symbol-table-size 3001)
 

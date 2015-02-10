@@ -243,6 +243,8 @@ chicken.lolevel.import.scm
 chicken.lolevel.import.c
 chicken.ports.import.scm
 chicken.ports.import.c
+chicken.posix.import.scm
+chicken.posix.import.c
 chicken.tcp.import.scm
 chicken.tcp.import.c
 chicken.utils.import.scm
@@ -251,12 +253,10 @@ foreign.import.scm
 foreign.import.c
 srfi-1.import.scm
 srfi-4.import.scm
-posix.import.scm
 extras.import.scm
 irregex.import.scm
 srfi-1.import.c
 srfi-4.import.c
-posix.import.c
 extras.import.c
 irregex.import.c
 csi.import.scm
