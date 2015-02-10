@@ -650,7 +650,7 @@ ports.c: $(SRCDIR)ports.scm $(SRCDIR)common-declarations.scm
 files.c: $(SRCDIR)files.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib) -emit-import-library chicken.files
 lolevel.c: $(SRCDIR)lolevel.scm $(SRCDIR)common-declarations.scm
-	$(bootstrap-lib) 
+	$(bootstrap-lib) -emit-import-library chicken.lolevel
 tcp.c: $(SRCDIR)tcp.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib) -emit-import-library chicken.tcp
 srfi-1.c: $(SRCDIR)srfi-1.scm $(SRCDIR)common-declarations.scm
