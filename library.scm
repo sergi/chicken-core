@@ -1997,7 +1997,8 @@ EOF
                     (##sys#slot next 1)) ) )  ) ) )
 
 (define (##sys#lcm x y)
-  (quotient (* x y) (##sys#internal-gcd 'lcm x y)) )
+  (let ((gcd (##sys#internal-gcd 'lcm x y))) ; Ensure better error message
+    (quotient (* x y) gcd) ) )
 
 (define (lcm . ns)
   (if (null? ns)
@@ -2006,9 +2007,9 @@ EOF
                  (next (##sys#slot ns 1)))
         (if (null? next)
             (if (integer? head) (abs head) (##sys#error-bad-integer head 'lcm))
-            (let ((n2 (##sys#slot next 0)))
-              (loop (quotient (##sys#*-2 head n2)
-                     (##sys#internal-gcd 'lcm head n2))
+            (let* ((n2 (##sys#slot next 0))
+		   (gcd (##sys#internal-gcd 'lcm head n2)))
+              (loop (quotient (##sys#*-2 head n2) gcd)
                     (##sys#slot next 1)) ) )  ) ) )
 
 ;; This simple enough idea is from
