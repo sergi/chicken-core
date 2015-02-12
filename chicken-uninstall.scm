@@ -33,9 +33,10 @@
   
   (import scheme chicken foreign)
   (import setup-api)
-  (import srfi-1 irregex)
+  (import srfi-1)
   (import chicken.data-structures
 	  chicken.files
+	  chicken.irregex
 	  chicken.ports
 	  chicken.posix
 	  chicken.utils)

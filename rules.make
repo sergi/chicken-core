@@ -585,6 +585,7 @@ chicken-status.c: chicken-status.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
 		chicken.files.import.scm \
+		chicken.irregex.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
 		setup-api.import.scm
@@ -592,6 +593,7 @@ chicken-install.c: chicken-install.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
 		chicken.files.import.scm \
+		chicken.irregex.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
 		chicken.utils.import.scm \
@@ -600,6 +602,7 @@ chicken-install.c: chicken-install.scm \
 chicken-uninstall.c: chicken-uninstall.scm \
 		chicken.data-structures.import.scm \
 		chicken.files.import.scm \
+		chicken.irregex.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
 		chicken.utils.import.scm \
@@ -608,6 +611,7 @@ setup-api.c: setup-api.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
 		chicken.files.import.scm \
+		chicken.irregex.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
 		chicken.utils.import.scm
@@ -615,6 +619,7 @@ setup-download.c: setup-download.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
 		chicken.files.import.scm \
+		chicken.irregex.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
 		chicken.tcp.import.scm \
@@ -622,15 +627,18 @@ setup-download.c: setup-download.scm \
 		setup-api.import.scm
 posixunix.c: posixunix.scm \
 		chicken.files.import.scm \
+		chicken.irregex.import.scm \
 		chicken.ports.import.scm
 posixwin.c: posixwin.scm \
 		chicken.files.import.scm \
+		chicken.irregex.import.scm \
 		chicken.ports.import.scm
 extras.c: extras.scm \
 		chicken.data-structures.import.scm
 files.c: files.scm \
 		chicken.data-structures.import.scm \
-		chicken.extras.import.scm
+		chicken.extras.import.scm \
+		chicken.irregex.import.scm
 ports.c: ports.scm \
 		chicken.extras.import.scm
 tcp.c: tcp.scm \
@@ -639,7 +647,8 @@ utils.c: utils.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
 		chicken.files.import.scm \
-		chicken.posix.import.scm
+		chicken.posix.import.scm \
+		chicken.irregex.import.scm
 
 define profile-flags
 $(if $(filter $(basename $(1)),$(PROFILE_OBJECTS)),-profile)
@@ -662,7 +671,7 @@ posixunix.c: $(SRCDIR)posixunix.scm $(SRCDIR)posix-common.scm $(SRCDIR)common-de
 posixwin.c: $(SRCDIR)posixwin.scm $(SRCDIR)posix-common.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib) -emit-import-library chicken.posix
 irregex.c: $(SRCDIR)irregex.scm $(SRCDIR)irregex-core.scm $(SRCDIR)irregex-utils.scm $(SRCDIR)common-declarations.scm
-	$(bootstrap-lib)
+	$(bootstrap-lib) -emit-import-library chicken.irregex
 chicken-syntax.c: $(SRCDIR)chicken-syntax.scm $(SRCDIR)common-declarations.scm
 	$(bootstrap-lib)
 chicken-ffi-syntax.c: $(SRCDIR)chicken-ffi-syntax.scm $(SRCDIR)common-declarations.scm
