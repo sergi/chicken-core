@@ -36,12 +36,13 @@
 			list-extension-versions
 			temporary-directory)
 
-  (import scheme chicken foreign)
+  (import scheme chicken)
   (import srfi-1
 	  setup-api
 	  chicken.data-structures
 	  chicken.extras
 	  chicken.files
+	  chicken.foreign
 	  chicken.irregex
 	  chicken.posix
 	  chicken.tcp

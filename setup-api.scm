@@ -65,11 +65,12 @@
      shellpath
      setup-error-handling)
   
-  (import scheme chicken foreign
+  (import scheme chicken
 	  srfi-1
 	  chicken.data-structures
 	  chicken.extras
 	  chicken.files
+	  chicken.foreign
 	  chicken.ports
 	  chicken.posix
 	  chicken.irregex

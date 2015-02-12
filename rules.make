@@ -528,7 +528,8 @@ batch-driver.c: batch-driver.scm \
 		chicken.compiler.support.import.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
-		chicken.files.import.scm
+		chicken.files.import.scm \
+		chicken.foreign.import.scm
 c-platform.c: c-platform.scm \
 		chicken.compiler.optimizer.import.scm \
 		chicken.compiler.support.import.scm \
@@ -543,7 +544,8 @@ core.c: core.scm \
 		chicken.compiler.scrutinizer.import.scm \
 		chicken.compiler.support.import.scm \
 		chicken.data-structures.import.scm \
-		chicken.extras.import.scm
+		chicken.extras.import.scm \
+		chicken.foreign.import.scm
 optimizer.c: optimizer.scm \
 		chicken.compiler.support.import.scm \
 		chicken.data-structures.import.scm
@@ -565,6 +567,7 @@ support.c: support.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
 		chicken.files.import.scm \
+		chicken.foreign.import.scm \
 		chicken.ports.import.scm
 csc.c: csc.scm \
 		chicken.data-structures.import.scm \
@@ -577,6 +580,7 @@ csi.c: csi.scm \
 chicken-bug.c: chicken-bug.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
+		chicken.foreign.import.scm \
 		chicken.tcp.import.scm \
 		chicken.utils.import.scm
 chicken-profile.c: chicken-profile.scm \
@@ -585,6 +589,7 @@ chicken-status.c: chicken-status.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
 		chicken.files.import.scm \
+		chicken.foreign.import.scm \
 		chicken.irregex.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
@@ -593,6 +598,7 @@ chicken-install.c: chicken-install.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
 		chicken.files.import.scm \
+		chicken.foreign.import.scm \
 		chicken.irregex.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
@@ -602,6 +608,7 @@ chicken-install.c: chicken-install.scm \
 chicken-uninstall.c: chicken-uninstall.scm \
 		chicken.data-structures.import.scm \
 		chicken.files.import.scm \
+		chicken.foreign.import.scm \
 		chicken.irregex.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
@@ -611,6 +618,7 @@ setup-api.c: setup-api.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
 		chicken.files.import.scm \
+		chicken.foreign.import.scm \
 		chicken.irregex.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
@@ -619,6 +627,7 @@ setup-download.c: setup-download.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
 		chicken.files.import.scm \
+		chicken.foreign.import.scm \
 		chicken.irregex.import.scm \
 		chicken.ports.import.scm \
 		chicken.posix.import.scm \
@@ -627,26 +636,35 @@ setup-download.c: setup-download.scm \
 		setup-api.import.scm
 posixunix.c: posixunix.scm \
 		chicken.files.import.scm \
+		chicken.foreign.import.scm \
 		chicken.irregex.import.scm \
 		chicken.ports.import.scm
 posixwin.c: posixwin.scm \
 		chicken.files.import.scm \
+		chicken.foreign.import.scm \
 		chicken.irregex.import.scm \
 		chicken.ports.import.scm
+data-structures.c: data-structures.scm \
+		chicken.foreign.import.scm
 extras.c: extras.scm \
 		chicken.data-structures.import.scm
 files.c: files.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
+		chicken.foreign.import.scm \
 		chicken.irregex.import.scm
+lolevel.c: lolevel.scm \
+		chicken.foreign.import.scm
 ports.c: ports.scm \
 		chicken.extras.import.scm
 tcp.c: tcp.scm \
+		chicken.foreign.import.scm \
 		chicken.ports.import.scm
 utils.c: utils.scm \
 		chicken.data-structures.import.scm \
 		chicken.extras.import.scm \
 		chicken.files.import.scm \
+		chicken.foreign.import.scm \
 		chicken.posix.import.scm \
 		chicken.irregex.import.scm
 

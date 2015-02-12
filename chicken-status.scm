@@ -29,11 +29,12 @@
 
 (module main ()
   
-  (import scheme chicken foreign)
+  (import scheme chicken)
   (import srfi-1 setup-api)
   (import chicken.data-structures
 	  chicken.extras
 	  chicken.files
+	  chicken.foreign
 	  chicken.irregex
 	  chicken.ports
 	  chicken.posix)
