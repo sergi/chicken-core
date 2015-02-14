@@ -1,7 +1,7 @@
 ;;;; makedist.scm - Make distribution tarballs
 
 
-(use irregex srfi-1 setup-api)
+(use data-structures extras files irregex posix setup-api srfi-1 utils)
 
 (define *release* #f)
 (define *help* #f)
